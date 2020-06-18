@@ -9,6 +9,7 @@ class AccquireData:
         self.daily_hfq = db.daily_hfq
 
     def accquire_index(self,start_date=None,end_date=None):
+        
         #codes = ['000001.SH','000300.SH','399001.SZ','399005.SZ','399006.SZ']
         codes = ['000001.SH']
         for code in codes:
@@ -16,6 +17,8 @@ class AccquireData:
             for index in df_daily.index:
                 doc = dict(df_daily.loc[index])
                 print(doc,flush=True)
+        
+        
 
     def accquire_stock(self,start_date=None,end_date=None):
         pass
