@@ -30,6 +30,23 @@ conn=wrds.Connection(wrds_username='hanxu00')
 # 1	New York Stock Exchange
 # 2	American Stock Exchange
 
+
+# 表及字段含义：https://wrds-www.wharton.upenn.edu/data-dictionary/crsp_m_stock/
+# crsp.msf=Monthly Stock - Securities 
+# crsp.msenames= CRSP, Monthly Stock Event - Name History
+# permno股票识别码, permco公司识别码, ncusip：股票The CUSIP Agency will often change an issue's CUSIP identifier to reflect a change of name or capital structure.
+# shrcd=share code, exchcd=Exchange Code, siccd=industry, 
+# ret=return, vol=volume, shrout=Shares Outstanding, prc=Price or Bid/Ask Average
+# cfacpr=Cumulative Factor to Adjust Prices
+# cfacshr=Cumulative Factor to Adjust Shares/Vol
+# namedt=Names Date, nameendt=Names Ending Date
+# exchcd=Exchange Code
+# shrcd 第一位1=Ordinary Common Shares，
+# 第二位0=Securities which have not been further defined.
+# 1=Securities which need not be further defined.
+
+conn.list_tables(library="crsp")
+
 crsp_m = conn.raw_sql("""
                       select a.permno, a.permco, b.ncusip, a.date, 
                       b.shrcd, b.exchcd, b.siccd,
@@ -43,14 +60,15 @@ crsp_m = conn.raw_sql("""
                       and b.exchcd between -2 and 2
                       and b.shrcd between 10 and 11
                       """) 
-
+crsp_m.head()
+print('数据集的行列数：\n',crsp_m.shape)
 # Change variable format to int
 crsp_m[['permco','permno','shrcd','exchcd']]=\
     crsp_m[['permco','permno','shrcd','exchcd']].astype(int)
-
+crsp_m.dtypes
 # Line up date to be end of month
 crsp_m['date']=pd.to_datetime(crsp_m['date'])
-
+crsp_m.dtypes
 #######################################################
 # Create Momentum Portfolio                           #   
 # Measures Based on Past (J) Month Compounded Returns #
@@ -59,19 +77,28 @@ crsp_m['date']=pd.to_datetime(crsp_m['date'])
 J = 6 # Formation Period Length: J can be between 3 to 12 months
 K = 6 # Holding Period Length: K can be between 3 to 12 months
 
+#sort_values作用: pandas模块，Sort by the values along either axis.
 _tmp_crsp = crsp_m[['permno','date','ret']].sort_values(['permno','date'])\
     .set_index('date')
-
-# Replace missing return with 0
+_tmp_crsp.head()
+# Replace missing return with 0, fillna作用: Fill NA/NaN values using the specified method.
+print('数据集中是否存在缺失值：\n',any(_tmp_crsp['ret'].isnull()))
 _tmp_crsp['ret']=_tmp_crsp['ret'].fillna(0)
+print('数据集中是否存在缺失值：\n',any(_tmp_crsp['ret'].isnull()))
 
 # Calculate rolling cumulative return
 # by summing log(1+ret) over the formation period
 _tmp_crsp['logret']=np.log(1+_tmp_crsp['ret'])
+#groupby是pandas的函数，可以类似stata里的by用，后面可以直接.function
+#rolling(window,min_periods,center)
+#window: size of moving window
+#min_periods: threshold of non-null data points to require (otherwise result is NA)
+#center: boolean, whether to set the labels at the center (default is False)
 umd = _tmp_crsp.groupby(['permno'])['logret'].rolling(J, min_periods=J).sum()
+#reset_index行索引设置为变量
 umd = umd.reset_index()
 umd['cumret']=np.exp(umd['logret'])-1
-
+umd.head()
 
 ########################################
 # Formation of 10 Momentum Portfolios  #
@@ -80,11 +107,13 @@ umd['cumret']=np.exp(umd['logret'])-1
 # For each date: assign ranking 1-10 based on cumret
 # 1=lowest 10=highest cumret
 umd=umd.dropna(axis=0, subset=['cumret'])
+umd.head()
+#transform函数后面再学一下
 umd['momr']=umd.groupby('date')['cumret'].transform(lambda x: pd.qcut(x, 10, labels=False))
 
 umd.momr=umd.momr.astype(int)
 umd['momr'] = umd['momr']+1
-
+#####################进度mark，预计剩余时间2h######################
 # Corrected previous version month end line up issue
 # First lineup date to month end date medate
 # Then calculate hdate1 and hdate2 using medate
@@ -93,6 +122,7 @@ umd['form_date'] = umd['date']
 umd['medate'] = umd['date']+MonthEnd(0)
 umd['hdate1']=umd['medate']+MonthBegin(1)
 umd['hdate2']=umd['medate']+MonthEnd(K)
+
 umd = umd[['permno', 'form_date','momr','hdate1','hdate2']]
 
 # join rank and return data together
