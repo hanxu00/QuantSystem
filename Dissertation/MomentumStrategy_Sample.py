@@ -56,7 +56,7 @@ crsp_m = conn.raw_sql("""
                       on a.permno=b.permno
                       and b.namedt<=a.date
                       and a.date<=b.nameendt
-                      where a.date between '01/01/1963' and '12/31/1989'
+                      where a.date between '01/01/1963' and '12/31/1965'
                       and b.exchcd between -2 and 2
                       and b.shrcd between 10 and 11
                       """) 
