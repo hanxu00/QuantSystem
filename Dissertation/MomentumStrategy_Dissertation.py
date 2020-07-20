@@ -4,7 +4,6 @@
 import pandas as pd
 import numpy as np
 import wrds
-import matplotlib.pyplot as plt
 from pandas.tseries.offsets import *
 from scipy import stats
 
@@ -177,14 +176,14 @@ class Momentum:
         t_winners['momr']='winners'
         t_long_short['momr']='long_short'
 
-        # t_2['momr']='2'
-        # t_3['momr']='3'
-        # t_4['momr']='4'
-        # t_5['momr']='5'
-        # t_6['momr']='6'
-        # t_7['momr']='7'
-        # t_8['momr']='8'
-        # t_9['momr']='9'
+        # t_2['momr']='port2'
+        # t_3['momr']='port3'
+        # t_4['momr']='port4'
+        # t_5['momr']='port5'
+        # t_6['momr']='port6'
+        # t_7['momr']='port7'
+        # t_8['momr']='port8'
+        # t_9['momr']='port9'
 
         t_output =pd.concat([t_winners, t_losers, t_long_short])\
             .rename(columns={0:'t-stat', 1:'p-value'})
