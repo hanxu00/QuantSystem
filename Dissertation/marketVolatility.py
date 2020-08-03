@@ -45,9 +45,11 @@ rmrf = rmrf.set_index('date')
 rmrf = rmrf.groupby(pd.Grouper(freq='M')).last()
 
 rmrfmv = rmrf.drop(['Mkt-RF'], axis = 1)
-rmrfmv = rmrfmv.dropna(axis = 0, subset=['12'])
-rmrfmv['maxVolaMon'] = rmrfmv.idxmax(axis=1)
-rmrfmv['maxVola'] = rmrfmv.max(axis=1)
+rmrfmv = rmrfmv.dropna(axis = 0, subset=['11'])
+# rmrfmv['maxVolaMon'] = rmrfmv.idxmax(axis=1)
+# rmrfmv['maxVola'] = rmrfmv.max(axis=1)
+rmrfmv['maxVolaMon'] = rmrfmv.idxmin(axis=1)
+rmrfmv['maxVola'] = rmrfmv.(axis=1)
 rmrfmv['maxVolaMon'] = rmrfmv['maxVolaMon'].astype('int')
 
 rmrfMaxVola = rmrfmv[['maxVolaMon','maxVola']]
@@ -76,6 +78,7 @@ umd['cumret']=np.exp(umd['cumret'])-1
 umd = umd.drop(umd.groupby(['permno']).head(12).index,axis=0)
 #umd=umd.dropna(axis=0, subset=['cumret'])
 umd['momr']=umd.groupby('date_x')['cumret'].transform(lambda x: pd.qcut(x, 10, labels=False))
+umd=umd.dropna(axis=0, subset=['momr'])
 umd.momr=umd.momr.astype(int)
 umd['momr'] = umd['momr']+1
 umd['holdEnd'] = umd['date_x']+MonthEnd(1)

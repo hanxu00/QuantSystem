@@ -78,7 +78,7 @@ class Momentum:
         # form_date是formation的最后一个交易日
         # medate是formation自然月的最后一天
         # hdate1是holding period开始月的第一天
-        # hdate2是holding period自然月的最后一天
+        # hdate2是holding period结束月的最后一天
         # 构建hdate1和hdate2是为了后面merge以后保留holding period的数据
         ## 本身把S放在medate里，但是monthEnd可能有bug，对10066股票，总有两个月生成一样的medate，所以S改到hdate1里了
         umd['form_date'] = umd['date']
@@ -111,7 +111,7 @@ class Momentum:
         ewretdat.groupby(['momr'])['ewret'].describe()[['count','mean', 'std']]
         return ewretdat
 
-    def WMLoutput(self,ewretdat):
+    def WMLoutput(self,ewretdat,J):
         ## 4.Long-Short Portfolio Returns
         # Transpose portfolio layout to have columns as portfolio returns
         # pivot这个好用！:Return reshaped DataFrame organized by given index / column values.
@@ -149,7 +149,8 @@ class Momentum:
         # ewretdat3['cumret_7']=ewretdat3['1+7'].cumprod()-1
         # ewretdat3['cumret_8']=ewretdat3['1+8'].cumprod()-1
         # ewretdat3['cumret_9']=ewretdat3['1+9'].cumprod()-1
-        ewretdat3.head()
+        #ewretdat3.head()
+        #ewretdat3.to_csv('cumret_( %d,1,1)_1991-2019.csv' %J)
 
         ## 5.Portfolio Summary Statistics
         # Mean 
@@ -202,7 +203,7 @@ if __name__ == "__main__":
     # formationPeriod = [3,6,9,12]
     # holdingPeriod = [3,6,9,12]
     # SkipMonth = 0
-    formationPeriod = [11]
+    formationPeriod = [1,2,3,4,5,6,7,8,9,10,11]
     holdingPeriod = [1]
     SkipMonth = 1
     output = pd.DataFrame()
@@ -210,15 +211,16 @@ if __name__ == "__main__":
         for n in holdingPeriod:
             cumReturn = mm.calReturn(crsp_m=rawData,J=m) #按J计算累计收益
             portfolioSummary = mm.createMP(umd=cumReturn,crsp_m=rawData,S=SkipMonth,K=n) #构建收益分位数组合，输出各组合收益统计量
-            output_tmp = mm.WMLoutput(ewretdat=portfolioSummary) #构建WML组合，输出组合收益统计量
+            output_tmp = mm.WMLoutput(ewretdat=portfolioSummary,J=m) #构建WML组合，输出组合收益统计量
             if output.empty:
                 output = output_tmp
             else:
                 output = pd.concat([output,output_tmp])
             print("formationPeriod: %d, holdingperiod: %d" %(m,n))
-    print(output)
+    #print(output)
 
     #output.to_excel(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_(J,S,K)1965-1990.xlsx')
     #output.to_excel(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_(J,S,K)1991-n.xlsx')
-    output.to_excel(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_(11,1,1)1991-n.xlsx')
+    #output.to_excel(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_(11,1,1)1991-n.xlsx')
+    output.to_csv('output_(1-11,1,1)_1991-2019.csv')
 
