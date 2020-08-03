@@ -49,7 +49,7 @@ rmrfmv = rmrfmv.dropna(axis = 0, subset=['11'])
 # rmrfmv['maxVolaMon'] = rmrfmv.idxmax(axis=1)
 # rmrfmv['maxVola'] = rmrfmv.max(axis=1)
 rmrfmv['maxVolaMon'] = rmrfmv.idxmin(axis=1)
-rmrfmv['maxVola'] = rmrfmv.(axis=1)
+rmrfmv['maxVola'] = rmrfmv.min(axis=1)
 rmrfmv['maxVolaMon'] = rmrfmv['maxVolaMon'].astype('int')
 
 rmrfMaxVola = rmrfmv[['maxVolaMon','maxVola']]
