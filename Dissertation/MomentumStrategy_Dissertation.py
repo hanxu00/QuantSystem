@@ -225,22 +225,21 @@ class Momentum:
 
 if __name__ == "__main__":
     mm = Momentum()
-    # '01/01/1926' and '12/31/1955'
-    # '01/01/1950' and '12/31/1985'
-    # '01/01/1980' and '12/31/2000'
-    # '01/01/1995' and '06/30/2020'
     firmData1 = mm.accquireData(beginDate='01/01/1926',endDate='12/31/1955')
     firmData2 = mm.accquireData(beginDate='01/01/1950',endDate='12/31/1985')
     firmData3 = mm.accquireData(beginDate='01/01/1980',endDate='12/31/2000')
     firmData4 = mm.accquireData(beginDate='01/01/1995',endDate='06/30/2020')
+    #firmData = mm.accquireData(beginDate='01/01/1990',endDate='06/30/2020')
     marketData = mm.accquireMarket()
     #设定不同的period
-    formationPeriod = [1,2,3,4,5,6,7,8,9,10,11]
-    #formationPeriod = [11]
+    formationPeriod = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+    #formationPeriod = [1]
     holdingPeriod = [1]
     SkipMonth = 1
+    #SkipMonth = 0
     #设定不同的marketstate
     marketState = ['Bull','Correction','Bear','Rebound']
+    #marketState = ['Rebound']
     for ms in marketState:
         output = pd.DataFrame()
         for m in formationPeriod:
@@ -252,10 +251,14 @@ if __name__ == "__main__":
                 portReturnTemp1 = pd.concat([portReturn1,portReturn2])
                 portReturnTemp2 = pd.concat([portReturn3,portReturn4])
                 portReturn = pd.concat([portReturnTemp1,portReturnTemp2])
+                #portReturn = mm.calReturn(crsp_m=firmData,J=m,S=SkipMonth,K=n)
+                
                 portReturn['monthEndDate'] = portReturn['date'] + MonthEnd(0)
                 portReturn = portReturn.drop_duplicates(subset=['monthEndDate'])
                 portReturn_m = pd.merge(portReturn, marketData, on=['monthEndDate'], how='left')       
-                portReturn_m.to_csv('portReturn_%d.csv' %(m))
+                
+                if ms == 'Bull':
+                    portReturn_m.to_csv('portReturn_%d.csv' %(m))
                 portReturn_ms = portReturn_m.loc[portReturn_m.state == ms,]
                 print('portReturn_ms的行列数：\n',portReturn_ms.shape)
                 #portReturn_ms.to_csv('portReturn_%s.csv' %(ms))
