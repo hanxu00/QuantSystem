@@ -15,7 +15,7 @@ crsp = conn.raw_sql("""
                     on a.permno=b.permno
                     and b.namedt<=a.date
                     and a.date<=b.nameendt
-                    where a.date between '07/01/1941' and '12/31/2019'
+                    where a.date between '01/01/1989' and '12/31/2019'
                     and b.exchcd between -2 and 2
                     and b.shrcd between 10 and 11
                     """) 

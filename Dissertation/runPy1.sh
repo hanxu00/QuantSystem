@@ -2,4 +2,4 @@
 #$ -cwd
 #$ -pe onenode 6
 #$ -l m_mem_free=8G
-python3 MomentumStrategy_Dissertation.py
+python3 dynamicStrategy.py

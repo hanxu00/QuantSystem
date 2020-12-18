@@ -82,15 +82,20 @@ print(result.summary())
 print(result.summary())
 
 # ----------------- 上面的基础上加入formation period回归 ------------------
-for i in range(1,11):
-    temp = pd.read_csv('/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/portReturn_%s.CSV' %(i), 
+for i in range(1,12):
+#    temp = pd.read_csv('/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/portReturn_%s.CSV' %(i), 
+#                            encoding='utf8', header=0)
+    #下面是1990-2019的数据
+    temp = pd.read_csv('/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/sub1990-2020/portReturn_%s.CSV' %(i), 
                             encoding='utf8', header=0)
     WML_temp = temp[['date','long_short','mret','IBt-1','IU']]
     WML_temp['formPeriod'] = i
     if i == 1:
         WML = WML_temp
+        print(i)
     else:
         WML = pd.concat([WML,WML_temp])
+        print(i)
 WML = WML.rename(columns={'IBt-1':'IBtm1'})
 WML['IBmret'] = WML['IBtm1']*WML['mret']
 WML['IBIUmret'] = WML['IBtm1']*WML['IU']*WML['mret']
@@ -98,11 +103,23 @@ WML['IBfp'] = WML['IBtm1']*WML['formPeriod']
 WML['IBIUfp'] = WML['IBtm1']*WML['IU']*WML['formPeriod']
 
 result9 = sm.formula.ols('long_short ~ 1+formPeriod',missing='drop',data=WML).fit()
-result10 = sm.formula.ols('long_short ~ 1+IBtm1+formPeriod+IBfp+IBIUfp+formPeriod',missing='drop',data=WML).fit()
+result10 = sm.formula.ols('long_short ~ 1+IBtm1+formPeriod+IBfp+IBIUfp',missing='drop',data=WML).fit()
 result11 = sm.formula.ols('long_short ~ 1+IBtm1+mret+IBmret+IBIUmret+formPeriod',missing='drop',data=WML).fit()
+result12 = sm.formula.ols('long_short ~ 1+IBtm1+mret+IBmret+IBIUmret+formPeriod+IBfp+IBIUfp',missing='drop',data=WML).fit()
 
-output = summary_col([result9,result10,result11],stars=True)
+output = summary_col([result9,result10,result11,result12],stars=True)
 print(output)
+temp1 = output.as_text()
+temp2 = output.as_html()
+import csv
+resultFile = open("table.csv",'w')
+resultFile.write(temp1)
+resultFile.close()
+
+Html_file= open("filename.html","w")
+Html_file.write(temp2)
+Html_file.close()
+summary_col([result9],stars=True)
 
 # ----------------- market risk premium regression 加入cay的预测-------------------
 treasury = pd.read_csv(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/treasury bond.CSV', 

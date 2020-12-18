@@ -225,50 +225,60 @@ class Momentum:
 
 if __name__ == "__main__":
     mm = Momentum()
-    firmData1 = mm.accquireData(beginDate='01/01/1926',endDate='12/31/1955')
-    firmData2 = mm.accquireData(beginDate='01/01/1950',endDate='12/31/1985')
-    firmData3 = mm.accquireData(beginDate='01/01/1980',endDate='12/31/2000')
-    firmData4 = mm.accquireData(beginDate='01/01/1995',endDate='06/30/2020')
-    #firmData = mm.accquireData(beginDate='01/01/1990',endDate='06/30/2020')
+    # firmData1 = mm.accquireData(beginDate='01/01/1926',endDate='12/31/1955')
+    # firmData2 = mm.accquireData(beginDate='01/01/1950',endDate='12/31/1985')
+    # firmData3 = mm.accquireData(beginDate='01/01/1980',endDate='12/31/2000')
+    # firmData4 = mm.accquireData(beginDate='01/01/1995',endDate='06/30/2020')
+    
+    firmData = mm.accquireData(beginDate='01/01/1988',endDate='01/31/2019')
+    
     marketData = mm.accquireMarket()
     #设定不同的period
-    formationPeriod = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+    #formationPeriod = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+    formationPeriod = [1,2,3,4,5,6,7,8,9,10,11]
     #formationPeriod = [1]
     holdingPeriod = [1]
     SkipMonth = 1
     #SkipMonth = 0
     #设定不同的marketstate
-    marketState = ['Bull','Correction','Bear','Rebound']
+    #marketState = ['Bull','Correction','Bear','Rebound']
     #marketState = ['Rebound']
-    for ms in marketState:
-        output = pd.DataFrame()
-        for m in formationPeriod:
-            for n in holdingPeriod:
-                portReturn1 = mm.calReturn(crsp_m=firmData1,J=m,S=SkipMonth,K=n) #按J计算累计收益,构建收益分位数组合，输出各组合收益统计量
-                portReturn2 = mm.calReturn(crsp_m=firmData2,J=m,S=SkipMonth,K=n)
-                portReturn3 = mm.calReturn(crsp_m=firmData3,J=m,S=SkipMonth,K=n)
-                portReturn4 = mm.calReturn(crsp_m=firmData4,J=m,S=SkipMonth,K=n)
-                portReturnTemp1 = pd.concat([portReturn1,portReturn2])
-                portReturnTemp2 = pd.concat([portReturn3,portReturn4])
-                portReturn = pd.concat([portReturnTemp1,portReturnTemp2])
-                #portReturn = mm.calReturn(crsp_m=firmData,J=m,S=SkipMonth,K=n)
-                
-                portReturn['monthEndDate'] = portReturn['date'] + MonthEnd(0)
-                portReturn = portReturn.drop_duplicates(subset=['monthEndDate'])
-                portReturn_m = pd.merge(portReturn, marketData, on=['monthEndDate'], how='left')       
-                
-                if ms == 'Bull':
-                    portReturn_m.to_csv('portReturn_%d.csv' %(m))
-                portReturn_ms = portReturn_m.loc[portReturn_m.state == ms,]
-                print('portReturn_ms的行列数：\n',portReturn_ms.shape)
-                #portReturn_ms.to_csv('portReturn_%s.csv' %(ms))
-                output_tmp = mm.WMLoutput(ewretdat3=portReturn_ms) #输出组合收益统计量
-                if output.empty:
-                    output = output_tmp
-                else:
-                    output = pd.concat([output,output_tmp])
-                print("formationPeriod: %d, holdingperiod: %d, state: %s" %(m,n,ms))
-        #output.to_csv(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_%s.csv' %(ms))
-        output.to_csv('output_%s.csv' %(ms))
-    #output.to_csv('output_(1-11,1,1)_1991-2019.csv')
+    #for ms in marketState:
+    output = pd.DataFrame()
+    for m in formationPeriod:
+        for n in holdingPeriod:
+            # portReturn1 = mm.calReturn(crsp_m=firmData1,J=m,S=SkipMonth,K=n) #按J计算累计收益,构建收益分位数组合，输出各组合收益统计量
+            # portReturn2 = mm.calReturn(crsp_m=firmData2,J=m,S=SkipMonth,K=n)
+            # portReturn3 = mm.calReturn(crsp_m=firmData3,J=m,S=SkipMonth,K=n)
+            # portReturn4 = mm.calReturn(crsp_m=firmData4,J=m,S=SkipMonth,K=n)
+            # portReturnTemp1 = pd.concat([portReturn1,portReturn2])
+            # portReturnTemp2 = pd.concat([portReturn3,portReturn4])
+            # portReturn = pd.concat([portReturnTemp1,portReturnTemp2])
+            
+            portReturn = mm.calReturn(crsp_m=firmData,J=m,S=SkipMonth,K=n)
+            
+            portReturn['monthEndDate'] = portReturn['date'] + MonthEnd(0)
+            portReturn = portReturn.drop_duplicates(subset=['monthEndDate'])
+            portReturn_m = pd.merge(portReturn, marketData, on=['monthEndDate'], how='left')       
+            
+            #-------这部分是分市场状态--------
+            # if ms == 'Bull':
+            #     portReturn_m.to_csv('portReturn_%d.csv' %(m))
+            # portReturn_ms = portReturn_m.loc[portReturn_m.state == ms,]
+            # print('portReturn_ms的行列数：\n',portReturn_ms.shape)
+            # #portReturn_ms.to_csv('portReturn_%s.csv' %(ms))
+            # output_tmp = mm.WMLoutput(ewretdat3=portReturn_ms) #输出组合收益统计量
+            #-------------------------
+
+            output_tmp = mm.WMLoutput(ewretdat3=portReturn_m)
+            
+            if output.empty:
+                output = output_tmp
+            else:
+                output = pd.concat([output,output_tmp])
+            #print("formationPeriod: %d, holdingperiod: %d, state: %s" %(m,n,ms))
+    #output.to_csv(r'/Users/hanxu/OneDrive - University of Bristol/10.Dissertation/Data/output_%s.csv' %(ms))
+    #output.to_csv('output_%s.csv' %(ms))
+    #output.to_csv('output_(1-11,1,1)_1929-2019.csv')
+    output.to_csv('output_(1-11,1,1)_1990-2019.csv')
 
